@@ -1,0 +1,3 @@
+include ':flagship'
+include ':app'
+rootProject.name = "flagship-android"

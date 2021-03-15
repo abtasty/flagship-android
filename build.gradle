@@ -1,0 +1,67 @@
+buildscript {
+    ext {
+        kotlin_version = "1.4.21"
+        artifact_id = "flagship-android"
+        group_id = "com.abtasty"
+        user_org = "abtasty"
+    }
+
+    def flagship_version_name = System.getenv('FLAGSHIP_VERSION_NAME')
+    def flagship_version_code = System.getenv('FLAGSHIP_VERSION_CODE')
+
+    def bintray_user = System.getenv('BINTRAY_USER')
+    def bintray_key = System.getenv('BINTRAY_KEY')
+
+    if (flagship_version_name != null)
+        rootProject.ext.flagship_version_name = flagship_version_name
+    else
+        rootProject.ext.flagship_version_name = "2.0.3"
+
+    if (flagship_version_code != null)
+        rootProject.ext.flagship_version_code = flagship_version_code
+    else
+        rootProject.ext.flagship_version_code = 12
+
+    if (bintray_user != null && bintray_key != null) {
+        rootProject.ext.bintray_user = bintray_user
+        rootProject.ext.bintray_key = bintray_key
+    } else {
+        try {
+            def keystorePropertiesFile = file(getProjectDir().absolutePath+ "/keystore.properties")
+            def keystoreProperties = new Properties()
+            keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+            rootProject.ext.bintray_user = keystoreProperties.getProperty("bintray_user")
+            rootProject.ext.bintray_key = keystoreProperties.getProperty("bintray_key")
+
+        } catch (Exception e) {
+            rootProject.ext.bintray_user = ''
+            rootProject.ext.bintray_key = ''
+            print e
+        }
+    }
+
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
+        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.16"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+        maven { url 'https://dl.bintray.com/abtasty/flagship-android' }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

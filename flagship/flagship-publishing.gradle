@@ -1,0 +1,76 @@
+apply plugin: 'maven-publish'
+apply plugin: 'org.jetbrains.dokka-android'
+apply plugin: 'com.jfrog.bintray'
+
+bintray {
+
+    user = bintray_user
+    key = bintray_key
+
+    pkg {
+        repo = artifact_id
+        name = artifact_id
+        userOrg = 'abtasty'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'http://developers.flagship.io/android/v2.0.0/'
+        version {
+            name = flagship_version_name
+        }
+    }
+    publications = ['toBintray']
+}
+
+
+dokka {
+    outputFormat = 'html'
+    outputDirectory = "$buildDir/outputs/dokka/"
+    sourceDirs = files('src/main/java')
+}
+
+publishing {
+
+    publications {
+
+        maven(MavenPublication) {
+            groupId group_id
+            artifactId artifact_id
+            version flagship_version_name
+            artifact "$buildDir/outputs/aar/flagship-android-"+flagship_version_name+".aar"
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.implementation.allDependencies.each { dependency ->
+                    if (dependency.name != "unspecified") {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', dependency.group)
+                        dependencyNode.appendNode('artifactId', dependency.name)
+                        dependencyNode.appendNode('version', dependency.version)
+                    }
+                }
+            }
+        }
+
+        toBintray(MavenPublication) {
+            groupId group_id
+            artifactId artifact_id
+            version flagship_version_name
+            artifact "$buildDir/outputs/aar/flagship-android-"+flagship_version_name+".aar" //aar artifact you want to publish
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.implementation.allDependencies.each { dependency ->
+                    if (dependency.name != "unspecified") {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', dependency.group)
+                        dependencyNode.appendNode('artifactId', dependency.name)
+                        dependencyNode.appendNode('version', dependency.version)
+                    }
+                }
+            }
+        }
+    }
+
+    repositories{
+        maven {
+            url = "$buildDir/publishing/"
+        }
+    }
+}

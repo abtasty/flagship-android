@@ -1,0 +1,3 @@
+[submodule "flagship"]
+	path = flagship
+	url = git@github.com:abtasty/flagship-android.git
